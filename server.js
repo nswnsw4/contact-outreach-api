@@ -905,6 +905,12 @@ app.post("/scrape-youtube", createScrapeHandler(["youtubeLinks"]));
 app.post("/scrape-pinterest", createScrapeHandler(["pinterestLinks"]));
 app.post("/scrape-github", createScrapeHandler(["githubLinks"]));
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`API running on port ${process.env.PORT || 3000}`);
-});
+if (require.main === module) {
+  const port = process.env.PORT || 3000;
+
+  app.listen(port, () => {
+    console.log(`API running on port ${port}`);
+  });
+}
+
+module.exports = app;
