@@ -1,0 +1,666 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Contact Outreach API",
+    "version": "1.0.0",
+    "description": "Extract publicly available contact information and social profile links from websites, including emails, WhatsApp links, LinkedIn, Twitter/X, Facebook, Instagram, Trustpilot, TikTok, YouTube, Pinterest, and GitHub links."
+  },
+  "servers": [
+    {
+      "url": "https://contact-outreach-api.nswnsw4.workers.dev"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Returns API status and the available endpoint list.",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "API is running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Scrape All Contact Data",
+        "description": "Scrapes emails, WhatsApp links, and supported social profile links from one or more websites.",
+        "operationId": "scrapeAll",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "description": "Scraped contact and social link results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FullScrapeResponse"
+                },
+                "example": {
+                  "website": "https://example.com/",
+                  "pagesScanned": 3,
+                  "emails": [
+                    "hello@example.com"
+                  ],
+                  "emailContacts": [
+                    {
+                      "email": "hello@example.com",
+                      "mailtoLink": "mailto:hello@example.com",
+                      "gmailLink": "https://mail.google.com/mail/?view=cm&fs=1&to=hello%40example.com",
+                      "outlookLink": "https://outlook.live.com/mail/0/deeplink/compose?to=hello%40example.com"
+                    }
+                  ],
+                  "whatsappLinks": [],
+                  "whatsappContacts": [],
+                  "linkedinLinks": [],
+                  "twitterLinks": [],
+                  "facebookLinks": [],
+                  "instagramLinks": [],
+                  "trustpilotLinks": [],
+                  "tiktokLinks": [],
+                  "youtubeLinks": [],
+                  "pinterestLinks": [],
+                  "githubLinks": []
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/download-csv": {
+      "post": {
+        "summary": "Download CSV",
+        "description": "Scrapes supported contact and social link data and returns the results as a CSV file.",
+        "operationId": "downloadCsv",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "description": "CSV file containing scraped results",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "website,pagesScanned,type,value,mailtoLink,gmailLink,outlookLink,whatsappMessageLink,error\nhttps://example.com/,3,email,hello@example.com,mailto:hello@example.com,,,"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-emails": {
+      "post": {
+        "summary": "Scrape Emails",
+        "description": "Returns email addresses and generated email, Gmail, and Outlook compose links.",
+        "operationId": "scrapeEmails",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "description": "Email scraping results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailResponse"
+                },
+                "example": {
+                  "website": "https://example.com/",
+                  "pagesScanned": 3,
+                  "emails": [
+                    "hello@example.com"
+                  ],
+                  "emailContacts": [
+                    {
+                      "email": "hello@example.com",
+                      "mailtoLink": "mailto:hello@example.com",
+                      "gmailLink": "https://mail.google.com/mail/?view=cm&fs=1&to=hello%40example.com",
+                      "outlookLink": "https://outlook.live.com/mail/0/deeplink/compose?to=hello%40example.com"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-whatsapp": {
+      "post": {
+        "summary": "Scrape WhatsApp Links",
+        "description": "Returns WhatsApp links and generated WhatsApp message links.",
+        "operationId": "scrapeWhatsApp",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "description": "WhatsApp scraping results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatsAppResponse"
+                },
+                "example": {
+                  "website": "https://example.com/",
+                  "pagesScanned": 3,
+                  "whatsappLinks": [
+                    "https://wa.me/15551234567"
+                  ],
+                  "whatsappContacts": [
+                    {
+                      "whatsappLink": "https://wa.me/15551234567",
+                      "whatsappMessageLink": "https://wa.me/15551234567?text=Hi%2C+I+wanted+to+reach+out."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-linkedin": {
+      "post": {
+        "summary": "Scrape LinkedIn Links",
+        "description": "Returns LinkedIn links found on the requested website.",
+        "operationId": "scrapeLinkedIn",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SocialLinks"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-twitter": {
+      "post": {
+        "summary": "Scrape Twitter/X Links",
+        "description": "Returns Twitter/X links found on the requested website.",
+        "operationId": "scrapeTwitter",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SocialLinks"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-facebook": {
+      "post": {
+        "summary": "Scrape Facebook Links",
+        "description": "Returns Facebook links found on the requested website.",
+        "operationId": "scrapeFacebook",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SocialLinks"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-instagram": {
+      "post": {
+        "summary": "Scrape Instagram Links",
+        "description": "Returns Instagram links found on the requested website.",
+        "operationId": "scrapeInstagram",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SocialLinks"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-trustpilot": {
+      "post": {
+        "summary": "Scrape Trustpilot Links",
+        "description": "Returns Trustpilot links found on the requested website.",
+        "operationId": "scrapeTrustpilot",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SocialLinks"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-tiktok": {
+      "post": {
+        "summary": "Scrape TikTok Links",
+        "description": "Returns TikTok links found on the requested website.",
+        "operationId": "scrapeTikTok",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SocialLinks"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-youtube": {
+      "post": {
+        "summary": "Scrape YouTube Links",
+        "description": "Returns YouTube links found on the requested website.",
+        "operationId": "scrapeYouTube",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SocialLinks"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-pinterest": {
+      "post": {
+        "summary": "Scrape Pinterest Links",
+        "description": "Returns Pinterest links found on the requested website.",
+        "operationId": "scrapePinterest",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SocialLinks"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/scrape-github": {
+      "post": {
+        "summary": "Scrape GitHub Links",
+        "description": "Returns GitHub links found on the requested website.",
+        "operationId": "scrapeGitHub",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScrapeRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SocialLinks"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "requestBodies": {
+      "ScrapeRequestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ScrapeRequest"
+            },
+            "example": {
+              "website": "example.com",
+              "maxPages": 5,
+              "emailSubject": "Quick question",
+              "emailMessage": "Hi, I wanted to reach out.",
+              "whatsappMessage": "Hi, I wanted to reach out."
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": "website, websites, domain, or domains is required"
+            }
+          }
+        }
+      },
+      "SocialLinks": {
+        "description": "Social link scraping results",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SocialLinkResponse"
+            },
+            "example": {
+              "website": "https://example.com/",
+              "pagesScanned": 3,
+              "linkedinLinks": [
+                "https://www.linkedin.com/company/example"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ScrapeRequest": {
+        "type": "object",
+        "description": "Provide one of website, websites, domain, or domains.",
+        "properties": {
+          "website": {
+            "type": "string",
+            "description": "Single website or domain to scan.",
+            "example": "example.com"
+          },
+          "websites": {
+            "type": "array",
+            "description": "Multiple websites or domains to scan. Maximum 20.",
+            "maxItems": 20,
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "example.com",
+              "example.org"
+            ]
+          },
+          "domain": {
+            "type": "string",
+            "description": "Alias for website.",
+            "example": "example.com"
+          },
+          "domains": {
+            "type": "array",
+            "description": "Alias for websites.",
+            "maxItems": 20,
+            "items": {
+              "type": "string"
+            }
+          },
+          "maxPages": {
+            "type": "integer",
+            "description": "Maximum pages to scan per website. Defaults to 10 and is capped at 25.",
+            "minimum": 1,
+            "maximum": 25,
+            "default": 10,
+            "example": 5
+          },
+          "emailSubject": {
+            "type": "string",
+            "description": "Optional subject used in generated email, Gmail, and Outlook compose links.",
+            "example": "Quick question"
+          },
+          "emailMessage": {
+            "type": "string",
+            "description": "Optional body text used in generated email, Gmail, and Outlook compose links.",
+            "example": "Hi, I wanted to reach out."
+          },
+          "whatsappMessage": {
+            "type": "string",
+            "description": "Optional message used in generated WhatsApp links.",
+            "example": "Hi, I wanted to reach out."
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Contact Outreach API is running"
+          },
+          "endpoints": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BaseResult": {
+        "type": "object",
+        "properties": {
+          "website": {
+            "type": "string",
+            "format": "uri"
+          },
+          "pagesScanned": {
+            "type": "integer"
+          }
+        }
+      },
+      "EmailContact": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "mailtoLink": {
+            "type": "string"
+          },
+          "gmailLink": {
+            "type": "string",
+            "format": "uri"
+          },
+          "outlookLink": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "WhatsAppContact": {
+        "type": "object",
+        "properties": {
+          "whatsappLink": {
+            "type": "string"
+          },
+          "whatsappMessageLink": {
+            "type": "string"
+          }
+        }
+      },
+      "EmailResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "emails": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "email"
+                }
+              },
+              "emailContacts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EmailContact"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "WhatsAppResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "whatsappLinks": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "whatsappContacts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WhatsAppContact"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "SocialLinkResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResult"
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          }
+        ]
+      },
+      "FullScrapeResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "emails": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "email"
+                }
+              },
+              "emailContacts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EmailContact"
+                }
+              },
+              "whatsappLinks": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "whatsappContacts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WhatsAppContact"
+                }
+              },
+              "linkedinLinks": {
+                "$ref": "#/components/schemas/UrlList"
+              },
+              "twitterLinks": {
+                "$ref": "#/components/schemas/UrlList"
+              },
+              "facebookLinks": {
+                "$ref": "#/components/schemas/UrlList"
+              },
+              "instagramLinks": {
+                "$ref": "#/components/schemas/UrlList"
+              },
+              "trustpilotLinks": {
+                "$ref": "#/components/schemas/UrlList"
+              },
+              "tiktokLinks": {
+                "$ref": "#/components/schemas/UrlList"
+              },
+              "youtubeLinks": {
+                "$ref": "#/components/schemas/UrlList"
+              },
+              "pinterestLinks": {
+                "$ref": "#/components/schemas/UrlList"
+              },
+              "githubLinks": {
+                "$ref": "#/components/schemas/UrlList"
+              }
+            }
+          }
+        ]
+      },
+      "UrlList": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
